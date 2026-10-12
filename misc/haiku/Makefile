@@ -136,7 +136,7 @@ ifeq ($(shell uname -s), Haiku)
 	LDLIBS_HAIKU += -lbsd
 endif
 
-CFLAGS += -std=c11 -Wall -Wextra -Wshadow
+CFLAGS += -Wall -Wextra -Wshadow
 CFLAGS += $(CFLAGS_OPTIMIZATION)
 CFLAGS += $(CFLAGS_CURSES)
 
