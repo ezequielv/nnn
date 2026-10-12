@@ -29,6 +29,10 @@ O_MATCHFLTR := 0  # allow filters without matches
 O_GITSTATUS := 0 # add git status to detail view
 O_NAMEFIRST := 0 # print file name first, add uid and guid to detail view
 
+ifneq ($(wildcard local/lib/*),)
+	LDLIBS += -Llocal/lib
+endif
+
 ifeq ($(strip $(O_GITSTATUS)),1)
 	LDLIBS += -lgit2
 endif
