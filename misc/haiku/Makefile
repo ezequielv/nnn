@@ -29,6 +29,12 @@ O_MATCHFLTR := 0  # allow filters without matches
 O_GITSTATUS := 0 # add git status to detail view
 O_NAMEFIRST := 0 # print file name first, add uid and guid to detail view
 
+LDLIBS += $(LDLIBS_USER)
+
+ifneq ($(wildcard local/lib/*),)
+	LDLIBS += -Llocal/lib
+endif
+
 ifeq ($(strip $(O_GITSTATUS)),1)
 	LDLIBS += -lgit2
 endif
@@ -132,9 +138,11 @@ ifeq ($(shell uname -s), Haiku)
 	LDLIBS_HAIKU ?= -lstdc++ -lgnu -lbe
 	SRC_HAIKU ?= misc/haiku/nm.cpp
 	OBJS_HAIKU ?= misc/haiku/nm.o
+	CPPFLAGS += -D_BSD_SOURCE
+	LDLIBS_HAIKU += -lbsd
 endif
 
-CFLAGS += -std=c11 -Wall -Wextra -Wshadow
+CFLAGS += -Wall -Wextra -Wshadow
 CFLAGS += $(CFLAGS_OPTIMIZATION)
 CFLAGS += $(CFLAGS_CURSES)
 
@@ -157,7 +165,7 @@ NAMEFIRST = patches/namefirst
 all: $(BIN)
 
 ifeq ($(shell uname -s), Haiku)
-$(OBJS_HAIKU): $(SRC_HAIKU)
+%.o : %.cpp
 	$(CC) -c $(CPPFLAGS) $(CFLAGS) -o $@ $<
 endif
 
@@ -218,7 +226,7 @@ upload-local: sign static
 	    --upload-file $(BIN)-static-$(VERSION).x86_64.tar.gz
 
 clean:
-	$(RM) -f $(BIN) nnn-$(VERSION).tar.gz *.sig $(BIN)-static $(BIN)-static-$(VERSION).x86_64.tar.gz
+	$(RM) -f $(BIN) $(OBJS) nnn-$(VERSION).tar.gz *.sig $(BIN)-static $(BIN)-static-$(VERSION).x86_64.tar.gz
 
 prepatch:
 ifeq ($(strip $(O_NAMEFIRST)),1)
