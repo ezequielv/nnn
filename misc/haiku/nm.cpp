@@ -53,6 +53,41 @@ struct haiku_nm_t {
 		dl->Run();
 	}
 
+#if ISSUE_HAIKU_DOUBLE_FREE_ON_EXIT_MODE
+	~haiku_nm_t() {
+#if ISSUE_HAIKU_DOUBLE_FREE_ON_EXIT_MODE == 1
+		// do nothing with 'flt':
+		//  * the crash should at least happen less often than before,
+		//    as "no free" is "better" than "double free" in this
+		//    regard;
+		//  * and either/both of these happen:
+		//   * 'BLooper::PostMessage(B_QUIT_REQUESTED)' causes the
+		//      linked/attached 'BMessageFilter' to be ultimately
+		//      deleted for us;
+		//   * there is no issue with leaked memory because currently
+		//     this is called just before 'main()' returns, which
+		//     should let the os clean up resources for this process,
+		//     including memory;
+#elif ( ISSUE_HAIKU_DOUBLE_FREE_ON_EXIT_MODE == 2 ) || ( ISSUE_HAIKU_DOUBLE_FREE_ON_EXIT_MODE == 3 )
+#if ISSUE_HAIKU_DOUBLE_FREE_ON_EXIT_MODE == 2
+		// NOTE: the 'RemoveCommonFilter()' does not seem to work. debugger reports: "looper must be locked before proceeding"
+#elif ISSUE_HAIKU_DOUBLE_FREE_ON_EXIT_MODE == 3
+		// NOTE: 'Lock()'-ing and 'Unlock()'-ing around the 'RemoveCommonFilter()' seems to work so far.
+		dl->Lock(); // ignore retval
+#endif // ISSUE_HAIKU_DOUBLE_FREE_ON_EXIT_MODE
+		dl->RemoveCommonFilter(flt); // ignore retval
+		delete flt;
+#if ISSUE_HAIKU_DOUBLE_FREE_ON_EXIT_MODE == 3
+		dl->Unlock(); // returns void
+#endif // ISSUE_HAIKU_DOUBLE_FREE_ON_EXIT_MODE
+#else // ISSUE_HAIKU_DOUBLE_FREE_ON_EXIT_MODE
+#	error unsupported value for ISSUE_HAIKU_DOUBLE_FREE_ON_EXIT_MODE (supported values: undefined/0 (disabled), 1..3)
+#endif // ISSUE_HAIKU_DOUBLE_FREE_ON_EXIT_MODE
+		// This is the way of deleting a BLooper
+		dl->PostMessage(B_QUIT_REQUESTED);
+	}
+#endif // ISSUE_HAIKU_DOUBLE_FREE_ON_EXIT_MODE
+
 	DirectoryListener *dl;
 	BMessageFilter *flt;
 	node_ref nr;
@@ -63,9 +98,11 @@ haiku_nm_h haiku_init_nm() {
 }
 
 void haiku_close_nm(haiku_nm_h hnd) {
+#if ! ISSUE_HAIKU_DOUBLE_FREE_ON_EXIT_MODE
 	delete hnd->flt;
 	// This is the way of deleting a BLooper
 	hnd->dl->PostMessage(B_QUIT_REQUESTED);
+#endif // ISSUE_HAIKU_DOUBLE_FREE_ON_EXIT_MODE
 	delete hnd;
 }
 int haiku_watch_dir(haiku_nm_h hnd, const char *path) {
