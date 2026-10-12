@@ -29,6 +29,8 @@ O_MATCHFLTR := 0  # allow filters without matches
 O_GITSTATUS := 0 # add git status to detail view
 O_NAMEFIRST := 0 # print file name first, add uid and guid to detail view
 
+LDLIBS += $(LDLIBS_USER)
+
 ifneq ($(wildcard local/lib/*),)
 	LDLIBS += -Llocal/lib
 endif
