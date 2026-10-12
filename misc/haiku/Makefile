@@ -24,6 +24,7 @@ O_NOSSN := 0  # disable session support
 O_NOUG := 0  # disable user, group name in status bar
 O_NOX11 := 0  # disable X11 integration
 O_MATCHFLTR := 0  # allow filters without matches
+O_BSDKQUEUE := 0 # use BSD kqueue instead of HAIKU_NM
 
 # User patches
 O_GITSTATUS := 0 # add git status to detail view
@@ -136,8 +137,12 @@ endif
 
 ifeq ($(shell uname -s), Haiku)
 	LDLIBS_HAIKU ?= -lstdc++ -lgnu -lbe
+ifeq ($(strip $(O_BSDKQUEUE)),1)
+	CPPFLAGS += -DUSE_BSD_KQUEUE
+else
 	SRC_HAIKU ?= misc/haiku/nm.cpp
 	OBJS_HAIKU ?= misc/haiku/nm.o
+endif
 	CPPFLAGS += -D_BSD_SOURCE
 	LDLIBS_HAIKU += -lbsd
 endif
