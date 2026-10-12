@@ -132,6 +132,8 @@ ifeq ($(shell uname -s), Haiku)
 	LDLIBS_HAIKU ?= -lstdc++ -lgnu -lbe
 	SRC_HAIKU ?= misc/haiku/nm.cpp
 	OBJS_HAIKU ?= misc/haiku/nm.o
+	CPPFLAGS += -D_BSD_SOURCE
+	LDLIBS_HAIKU += -lbsd
 endif
 
 CFLAGS += -std=c11 -Wall -Wextra -Wshadow
