@@ -165,7 +165,7 @@ NAMEFIRST = patches/namefirst
 all: $(BIN)
 
 ifeq ($(shell uname -s), Haiku)
-$(OBJS_HAIKU): $(SRC_HAIKU)
+%.o : %.cpp
 	$(CC) -c $(CPPFLAGS) $(CFLAGS) -o $@ $<
 endif
 
