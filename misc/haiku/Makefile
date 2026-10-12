@@ -143,14 +143,20 @@ else
 	SRC_HAIKU ?= misc/haiku/nm.cpp
 	OBJS_HAIKU ?= misc/haiku/nm.o
 endif
+	#? CPPFLAGS += -D_BSD_SOURCE
+	#? CPPFLAGS += -D_GNU_SOURCE
 	CPPFLAGS += -D_BSD_SOURCE
 	LDLIBS_HAIKU += -lbsd
 endif
 
+# [ev] orig: CFLAGS += -std=c11 -Wall -Wextra -Wshadow
+# CFLAGS += -std=c11 # NOTE: this breaks gcc-13.3.0 ('gcc-x86')
 CFLAGS += -Wall -Wextra -Wshadow
 CFLAGS += $(CFLAGS_OPTIMIZATION)
 CFLAGS += $(CFLAGS_CURSES)
 
+# [ev] orig: LDLIBS += $(LDLIBS_CURSES) -lpthread $(LDLIBS_HAIKU)
+#+? prev: v1: LDLIBS += -lpthread $(LDLIBS_HAIKU) $(LDLIBS_CURSES)
 LDLIBS += $(LDLIBS_CURSES) -lpthread $(LDLIBS_HAIKU)
 # static compilation needs libgpm development package
 ifeq ($(strip $(O_STATIC)),1)
@@ -162,6 +168,8 @@ DISTFILES = src nnn.1 Makefile README.md LICENSE
 SRC = src/nnn.c
 HEADERS = src/nnn.h
 BIN = nnn
+# [ev] orig: OBJS := nnn.o $(OBJS_HAIKU)
+#? [ev] # OBJS := $(OBJS_HAIKU) nnn.o
 OBJS := nnn.o $(OBJS_HAIKU)
 
 GITSTATUS = patches/gitstatus
@@ -170,7 +178,11 @@ NAMEFIRST = patches/namefirst
 all: $(BIN)
 
 ifeq ($(shell uname -s), Haiku)
+#-? prev: v1: $(OBJS_HAIKU): $(SRC_HAIKU)
+#-? prev: v1: 	$(CC) -c $(CPPFLAGS) $(CFLAGS) -o $@ $<
 %.o : %.cpp
+# clang complains about '-std=c11' for c++ source files
+#+ prev: v2:	$(CC) -c $(CPPFLAGS) $(filter-out -std=%,$(CFLAGS)) -o $@ $<
 	$(CC) -c $(CPPFLAGS) $(CFLAGS) -o $@ $<
 endif
 
@@ -180,6 +192,9 @@ nnn.o: $(SRC) $(HEADERS)
 $(BIN): $(OBJS)
 	@$(MAKE) --silent prepatch
 	$(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+# [ev] orig:	$(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+#? [ev]	$(CC) $(LDFLAGS) $(LDLIBS) -o $@ $^
+#+ prev: v2:	$(CC) $(LDFLAGS) $(LDLIBS) -o $@ $^
 	@$(MAKE) --silent postpatch
 
 # targets for backwards compatibility
