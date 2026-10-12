@@ -218,7 +218,7 @@ upload-local: sign static
 	    --upload-file $(BIN)-static-$(VERSION).x86_64.tar.gz
 
 clean:
-	$(RM) -f $(BIN) nnn-$(VERSION).tar.gz *.sig $(BIN)-static $(BIN)-static-$(VERSION).x86_64.tar.gz
+	$(RM) -f $(BIN) $(OBJS) nnn-$(VERSION).tar.gz *.sig $(BIN)-static $(BIN)-static-$(VERSION).x86_64.tar.gz
 
 prepatch:
 ifeq ($(strip $(O_NAMEFIRST)),1)
