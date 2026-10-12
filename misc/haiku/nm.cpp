@@ -5,6 +5,12 @@
 
 #include "haiku_interop.h"
 
+#ifndef ISSUE_HAIKU_DOUBLE_FREE_ON_EXIT_MODE
+	// At the moment, the "mode 3" is the one working the best, so we
+	// enable it by default for now.
+#	define ISSUE_HAIKU_DOUBLE_FREE_ON_EXIT_MODE		3
+#endif
+
 filter_result dir_mon_flt(BMessage *message, BHandler **hnd, BMessageFilter *fltr) {
 	(void) hnd;
 	(void) fltr;
